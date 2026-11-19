@@ -9,6 +9,99 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<!--
+=====================================================================================
+ A SPECIAL BIRTHDAY FOR SHAHANA  -  single-file project
+=====================================================================================
+
+ ROLES
+   SHAHANA = host (birthday girl). Picks the cake, creates the room and the invite link.
+   IRFAN   = guest. Joins using the invite link.
+
+ FOLDER STRUCTURE
+   birthday/
+   ├── index.html            <- this file (everything lives here)
+   ├── firebase.json         <- hosting + rules config (copy from below)
+   └── database.rules.json   <- security rules (copy from below)
+
+ FIREBASE SETUP (about 10 minutes)
+   1. Go to https://console.firebase.google.com  ->  Add project.
+   2. Build -> Authentication -> Get started -> Sign-in method -> enable "Anonymous".
+   3. Build -> Realtime Database -> Create database (choose a location, start in locked mode).
+   4. Project settings (gear) -> General -> "Your apps" -> Web app (</>) -> register.
+      Copy the firebaseConfig values into CONFIG.firebase below.
+      (make sure databaseURL is included; it is shown in Realtime Database page)
+   5. In Authentication -> Settings -> Authorized domains, make sure your hosting domain is listed
+      (<project>.web.app is added automatically).
+   6. Set CONFIG.birthdayDate below to the birthday in YYYY-MM-DD format.
+   7. Put the security rules below into Realtime Database -> Rules (or database.rules.json).
+      Replace ACTIVATION_MS with the number printed by this in your browser console:
+         Date.parse("YYYY-MM-DDT00:00:00+05:30")
+      (while testing, use 0 and keep CONFIG.testMode = true; before the real day set
+       testMode = false and put the real number. Rules use Firebase SERVER time, so the
+       device clock cannot unlock the birthday.)
+   8. Deploy:
+         npm i -g firebase-tools
+         firebase login
+         firebase init hosting   (public dir: .   single-page app: No   don't overwrite index.html)
+         firebase deploy
+      Open the https://<project>.web.app URL on Shahana's phone.
+
+ firebase.json
+   {
+     "hosting": { "public": ".", "ignore": ["firebase.json","database.rules.json","**/.*"] },
+     "database": { "rules": "database.rules.json" }
+   }
+
+ database.rules.json
+   {
+     "rules": {
+       ".read": false,
+       ".write": false,
+       "birthday_rooms": {
+         "$room": {
+           ".read": "auth != null",
+           ".write": "auth != null && !data.exists() && newData.child('hostUid').val() === auth.uid && now >= ACTIVATION_MS",
+           "cake_selection": { ".validate": "newData.isString() && (newData.val() === 'chocolate' || newData.val() === 'vanilla' || newData.val() === 'black_forest' || newData.val() === 'white_forest' || newData.val() === 'red_velvet')" },
+           "guestUid": {
+             ".write": "auth != null && !data.exists() && newData.val() === auth.uid && root.child('birthday_rooms').child($room).child('hostUid').val() !== auth.uid"
+           },
+           "stage": {
+             ".write": "auth != null && (auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val() || auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val())",
+             ".validate": "newData.isString() && (newData.val() === 'lobby' || newData.val() === 'room' || newData.val() === 'cut' || newData.val() === 'bite')"
+           },
+           "users": {
+             "SHAHANA": { ".write": "auth != null && auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val()" },
+             "IRFAN":   { ".write": "auth != null && auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val()" }
+           },
+           "cake_cutting": {
+             ".write": "auth != null && (auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val() || auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val())"
+           },
+           "cake_bite_events": {
+             ".write": "auth != null && (auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val() || auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val())"
+           },
+           "candles_blown": {
+             ".write": "auth != null && (auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val() || auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val())"
+           }
+         }
+       }
+     }
+   }
+
+ NOTE: the users/* keys changed from "irfan"/"sahaana" to "SHAHANA"/"IRFAN", so you MUST
+ re-publish the rules above. Old rooms created with the previous version will not work;
+ create a fresh invitation.
+
+ HOW IT WORKS
+   - Shahana (host) opens the site, waits for midnight (server time, Asia/Kolkata), picks a cake,
+     generates a room + invitation link and sends it to Irfan via WhatsApp.
+   - Irfan opens the link and joins as guest (first device to join gets the guest seat; the cake
+     can never be changed by him - the rules only allow cake_selection at room creation).
+   - Everything after that (candles, hold-to-cut, countdown, cutting, feeding) is synced live
+     through Firebase Realtime Database listeners.
+=====================================================================================
+-->
+
 <style>
 :root{
   --bg:#0D0B18; --pink:#FF6B9D; --soft:#FFC0D9; --white:#fff;
@@ -128,7 +221,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
 @keyframes smoke{0%{opacity:.8;transform:translateY(0)}100%{opacity:0;transform:translateY(-34px)}}
 
 .char{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 12px rgba(0,0,0,.4));animation:bob 3.2s ease-in-out infinite}
-.char.Irfan{animation-delay:-1.4s}
+.char.SHAHANA{animation-delay:-1.4s}
 @keyframes bob{50%{transform:translateY(-6px)}}
 .char .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
 @keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
@@ -176,10 +269,10 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
   <!-- ERROR -->
   <section class="page" id="p-error"><h2 class="script" id="errTitle">Oops</h2><p id="errMsg"></p></section>
 
-  <!-- PAGE 1: WELCOME (host) -->
+  <!-- PAGE 1: WELCOME (host = Shahana) -->
   <section class="page" id="p-welcome">
     <div class="bunting" id="bunting"></div>
-    <p class="eyebrow" id="wEyebrow">For Irfan</p>
+    <p class="eyebrow" id="wEyebrow">For Shahana</p>
     <h1 class="script" id="wTitle">Something special…</h1>
     <p id="wSub"></p>
     <div class="countdown" id="cd" hidden>
@@ -192,15 +285,15 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
     <p class="tiny" id="wNote"></p>
   </section>
 
-  <!-- PAGE 2: CAKE SELECTION (host only) -->
+  <!-- PAGE 2: CAKE SELECTION (host only = Shahana) -->
   <section class="page" id="p-cake">
     <h2 class="script">Choose Your Birthday Cake</h2>
-    <p>Shahana has something sweet for you! 🍰</p>
+    <p>It's your special day, Shahana! Pick your favourite 🍰</p>
     <div class="cakegrid" id="cakeGrid"></div>
     <button class="btn" id="btnGen" disabled>Generate Invitation Link 💌</button>
   </section>
 
-  <!-- PAGE 3: INVITATION (host) -->
+  <!-- PAGE 3: INVITATION (host = Shahana) -->
   <section class="page" id="p-invite">
     <h2 class="script">Your Birthday Invitation</h2>
     <div class="card">
@@ -212,19 +305,19 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
       </div>
     </div>
     <div class="chips" id="inviteChips"></div>
-    <button class="btn" id="btnEnter" disabled>Waiting for Shahana to join…</button>
+    <button class="btn" id="btnEnter" disabled>Waiting for Irfan to join…</button>
   </section>
 
-  <!-- GUEST: JOIN -->
+  <!-- GUEST (Irfan): JOIN -->
   <section class="page" id="p-join">
     <div class="bunting" id="bunting2"></div>
     <p class="eyebrow">You're invited</p>
     <h1 class="script">Irfan…</h1>
-    <p>Shahana has prepared something special for you ❤️</p>
+    <p>Shahana has invited you to celebrate her birthday ❤️</p>
     <button class="btn big" id="btnJoin">JOIN THE CELEBRATION</button>
   </section>
 
-  <!-- GUEST: WAIT -->
+  <!-- GUEST (Irfan): WAIT -->
   <section class="page" id="p-wait">
     <h2 class="script">Almost there…</h2>
     <p>Shahana will start the celebration in a moment 💕</p>
@@ -233,13 +326,13 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
 
   <!-- PAGE 4: SHARED ROOM -->
   <section class="page" id="p-room">
-    <h2 class="script">Happy 19th Birthday Irfan!</h2>
+    <h2 class="script">Happy 19th Birthday Shahana!</h2>
     <p id="rDate"></p>
     <p class="age">19 YEARS OLD</p>
     <div class="scene">
-      <div class="chwrap" id="chShahana"></div>
+      <div class="chwrap" id="chIrfan"></div>
       <div class="cakebox" id="roomCake"></div>
-      <div class="chwrap" id="chSah"></div>
+      <div class="chwrap" id="chShah"></div>
     </div>
     <div class="chips" id="roomChips"></div>
     <div class="row">
@@ -256,7 +349,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
     <p id="cutMsg"></p>
     <button class="btn hold" id="btnHold">🔪 HOLD TO CUT</button>
     <div id="cutDone" hidden>
-      <h2 class="script">Congratulations Irfan! 🎉</h2>
+      <h2 class="script">Congratulations Shahana! 🎉</h2>
       <p style="margin:8px 0 14px">You two cut it together ❤️</p>
       <button class="btn" id="btnToBite">Share a sweet bite 🍰</button>
     </div>
@@ -266,8 +359,8 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
   <section class="page" id="p-bite">
     <h2 class="script">Let's Share a Sweet Bite!</h2>
     <div class="bitestage" id="biteStage">
-      <div class="chwrap" id="bShahana"></div>
-      <div class="chwrap" id="bSah"></div>
+      <div class="chwrap" id="bIrfan"></div>
+      <div class="chwrap" id="bShah"></div>
       <div id="flySlice"></div>
     </div>
     <p id="biteCap">Send your sweetest bite across the miles 💞</p>
@@ -289,19 +382,24 @@ const CONFIG = {
   firebase: {
     apiKey: "AIzaSyCF90bkXcaj9beAAiRKHz6hDFpXbdxaPGE",
     authDomain: "birthday-a7a54.firebaseapp.com",
+    // CHECK THIS: copy the exact URL shown at the top of Realtime Database -> Data.
+    // US database:        https://birthday-a7a54-default-rtdb.firebaseio.com
+    // Singapore database: https://birthday-a7a54-default-rtdb.asia-southeast1.firebasedatabase.app
     databaseURL: "https://birthday-a7a54-default-rtdb.firebaseio.com",
     projectId: "birthday-a7a54",
     storageBucket: "birthday-a7a54.firebasestorage.app",
     messagingSenderId: "354534520091",
     appId: "1:354534520091:web:1e751e2fd6aee1d3a54fbe"
   },
-  birthdayDate: "2025-04-20",   // YYYY-MM-DD (birthday in Asia/Kolkata) — adjust as needed
+  birthdayDate: "CONFIGURE_BIRTHDAY_DATE",   // <-- YYYY-MM-DD (birthday in Asia/Kolkata)
   age: 19,
-  tzOffset: "+05:30",           // Asia/Kolkata
-  testMode: true                // true = skip the midnight lock (set FALSE before the real day)
+  tzOffset: "+05:30",                          // Asia/Kolkata
+  testMode: true                               // true = skip the midnight lock (set FALSE before the real day)
 };
 
-const NAMES = { Shahana: 'Shahana', Irfan: 'Irfan' };
+/* Roles: SHAHANA = host (birthday girl, creates the room), IRFAN = guest (joins via invite link) */
+const HOST = 'SHAHANA', GUEST = 'IRFAN';
+const NAMES = { SHAHANA: 'Shahana', IRFAN: 'Irfan' };
 const DATE_OK = /^\d{4}-\d{2}-\d{2}$/.test(CONFIG.birthdayDate);
 const ACTIVATION = DATE_OK ? Date.parse(CONFIG.birthdayDate + 'T00:00:00' + CONFIG.tzOffset) : NaN;
 
@@ -356,6 +454,7 @@ function hearts(x, y, n = 10) {
     x.fillStyle = '#fff'; requestAnimationFrame(frame);
   }
   init(); addEventListener('resize', init); requestAnimationFrame(frame);
+  // floating hearts + petals
   const box = $('floaters');
   setInterval(() => {
     if (document.hidden || box.childElementCount > 16) return;
@@ -390,7 +489,7 @@ const Confetti = (() => {
   return { burst };
 })();
 
-/* ============================== MUSIC ============================== */
+/* ============================== MUSIC (synth - Happy Birthday, music-box style) ============================== */
 const Music = (() => {
   const F = { G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
   const tune = [['G4', .75], ['G4', .25], ['A4', 1], ['G4', 1], ['C5', 1], ['B4', 2],
@@ -512,6 +611,7 @@ function miniSlice(id) {
   <g clip-path="url(#ms)"><rect x="0" y="0" width="56" height="20" fill="${P.frost}"/><rect x="0" y="20" width="56" height="8" fill="${P.sponge}"/><rect x="0" y="28" width="56" height="4" fill="${P.cream}"/><rect x="0" y="32" width="56" height="14" fill="${P.sponge}"/></g>
   <circle cx="14" cy="15" r="5" fill="${P.t === 'berry' ? '#e63950' : P.t === 'pearl' ? '#fff' : '#c1121f'}"/></svg>`;
 }
+/* cake controller */
 function mountCake(el, id, opts) {
   const holder = document.createElement('div'); holder.innerHTML = cakeSVG(id, opts);
   const svg = holder.firstChild; el.prepend(svg);
@@ -523,9 +623,9 @@ function mountCake(el, id, opts) {
   };
 }
 
-/* ============================== ART: CHARACTERS ============================== */
+/* ============================== ART: ANIME CHARACTERS ============================== */
 function charSVG(role) {
-  const sah = role === 'Irfan', hair = sah ? '#3a2030' : '#1d1a2b', shirt = sah ? '#ff6b9d' : '#5b7cfa';
+  const sah = role === 'SHAHANA', hair = sah ? '#3a2030' : '#1d1a2b', shirt = sah ? '#ff6b9d' : '#5b7cfa';
   return `<svg class="char ${role}" viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg" aria-label="${NAMES[role]}">
     ${sah ? `<path d="M18 70Q14 150 36 162L84 162Q106 150 102 70Z" fill="${hair}"/>` : ''}
     <path d="M26 170Q26 118 60 118Q94 118 94 170Z" fill="${shirt}"/>
@@ -546,7 +646,7 @@ function charSVG(role) {
 let db, auth, uid = null, role = null, roomId = null, roomRef = null, state = null;
 let serverOffset = 0, offsetKnown = false, online = false, joined = false, selectedCake = null;
 const serverNow = () => Date.now() + serverOffset;
-const other = () => role === 'Shahana' ? 'Irfan' : 'Shahana';
+const other = () => role === HOST ? GUEST : HOST;
 
 function setConn(ok, txt) {
   const c = $('conn'); c.classList.toggle('ok', ok === true); c.classList.toggle('bad', ok === false);
@@ -566,7 +666,7 @@ function initFirebase() {
     setConn(online ? true : (was === null ? null : false), online ? 'Connected' : (was === null ? 'Connecting…' : 'Reconnecting…'));
     if (online && was === false) toast('Reconnected 💞');
     was = online;
-    if (online && joined) presence();
+    if (online && joined) presence();         // re-announce after reconnect
   });
   return auth.signInAnonymously().then(c => { uid = c.user.uid; });
 }
@@ -588,13 +688,13 @@ async function createRoom() {
   try {
     const id = rid(), ref = db.ref('birthday_rooms/' + id);
     await ref.set({
-      cake_selection: selectedCake, host: 'Shahana', guest: 'Irfan', hostUid: uid,
+      cake_selection: selectedCake, host: HOST, guest: GUEST, hostUid: uid,
       createdAt: firebase.database.ServerValue.TIMESTAMP, stage: 'lobby', candles_blown: false,
-      users: { Shahana: { connected: true, ready: false }, Irfan: { connected: false, ready: false } },
+      users: { [HOST]: { connected: true, ready: false }, [GUEST]: { connected: false, ready: false } },
       cake_cutting: { status: 'waiting', countdown: 0, cutAt: 0, cut_completed: false },
       cake_bite_events: { sender: '', receiver: '', timestamp: 0, id: '' }
     });
-    roomId = id; role = 'Shahana';
+    roomId = id; role = HOST;
     history.replaceState(null, '', location.pathname + '?room=' + id);
     await attachRoom();
   } catch (e) {
@@ -609,10 +709,10 @@ async function joinExisting(id) {
   try { snap = await roomRef.once('value'); } catch (e) { return fail('Cannot open invitation', 'Please check your connection and try again.'); }
   if (!snap.exists()) return fail('Invitation not found', 'This birthday invitation does not exist or has expired.');
   const r = snap.val();
-  if (r.hostUid === uid) role = 'Shahana';
+  if (r.hostUid === uid) role = HOST;
   else if (!r.guestUid || r.guestUid === uid) {
     if (!r.guestUid) { try { await roomRef.child('guestUid').set(uid); } catch (e) { return fail('Invitation already used', 'Someone else already joined this birthday room.'); } }
-    role = 'Irfan';
+    role = GUEST;
   } else return fail('Invitation already used', 'Someone else already joined this birthday room.');
   await attachRoom();
 }
@@ -626,8 +726,8 @@ async function attachRoom() {
 
 const setStage = s => roomRef.child('stage').set(s).catch(() => toast('Could not change page, try again'));
 
-/* ============================== RENDER ============================== */
-const chipsHTML = () => ['Shahana', 'Irfan'].map(r => {
+/* ============================== RENDER ROUTER ============================== */
+const chipsHTML = () => [HOST, GUEST].map(r => {
   const u = (state.users || {})[r] || {}, st = $('p-cut').classList.contains('active') && u.ready;
   return `<span class="chip ${u.connected ? 'on' : ''} ${st ? 'rdy' : ''}"><i></i>${NAMES[r]} · ${st ? 'ready ❤️' : u.connected ? 'online' : 'offline'}</span>`;
 }).join('');
@@ -648,14 +748,16 @@ function render() {
   setFeedLabel();
   ensureCakes();
   const st = state.stage || 'lobby';
-  const target = st === 'lobby' ? (role === 'Shahana' ? 'p-invite' : 'p-wait') : st === 'room' ? 'p-room' : st === 'cut' ? 'p-cut' : 'p-bite';
+  const target = st === 'lobby' ? (role === HOST ? 'p-invite' : 'p-wait') : st === 'room' ? 'p-room' : st === 'cut' ? 'p-cut' : 'p-bite';
   if (!$(target).classList.contains('active')) { showPage(target); if (target === 'p-bite') biteSeen = true; }
 
   const users = state.users || {};
+  // invitation page
   if (st === 'lobby') {
+    if (role === HOST && !$('inviteUrl').value) fillInvite();
     $('inviteChips').innerHTML = chipsHTML(); $('waitChips').innerHTML = chipsHTML();
-    const here = !!(users.Shahana && users.Irfan && users.Shahana.connected && users.Irfan.connected), b = $('btnEnter');
-    b.disabled = !here; b.textContent = here ? 'Shahana is here! Enter birthday room ✨' : 'Waiting for Shahana to join…';
+    const here = !!(users[GUEST] && users[GUEST].connected), b = $('btnEnter');
+    b.disabled = !here; b.textContent = here ? NAMES[GUEST] + ' is here! Enter birthday room ✨' : 'Waiting for ' + NAMES[GUEST] + ' to join…';
     if (here && !joinToastDone) { joinToastDone = true; Confetti.burst(80); Music.chime(); }
   }
   if (st === 'room') {
@@ -675,11 +777,11 @@ function blowAnim() {
   Confetti.burst(90); Music.chime(); toast('Candles out - make a wish, Shahana ✨');
 }
 
-/* ============================== WELCOME ============================== */
+/* ============================== PAGE 1: WELCOME ============================== */
 let tick = null;
 function welcomeStart() {
   showPage('p-welcome'); bunting($('bunting'));
-  $('wNote').textContent = CONFIG.testMode ? 'TEST MODE - midnight lock is bypassed. Set CONFIG.testMode = false before the big day.' : '';
+  $('wNote').textContent = '';
   const loop = () => {
     if (!DATE_OK && !CONFIG.testMode) { $('wEyebrow').textContent = 'Setup needed'; $('wTitle').textContent = 'Set the date'; $('wSub').textContent = 'Fill in CONFIG.birthdayDate (YYYY-MM-DD) in index.html.'; return; }
     if (!offsetKnown && !CONFIG.testMode) { $('wEyebrow').textContent = 'Syncing with server clock…'; $('wTitle').textContent = 'Just a moment'; $('wSub').textContent = ''; return; }
@@ -687,7 +789,7 @@ function welcomeStart() {
     if (rem > 0 && !CONFIG.testMode) {
       $('cd').hidden = false; $('btnStart').hidden = true;
       $('wEyebrow').textContent = niceDate();
-      $('wTitle').textContent = "Irfan's birthday is almost here";
+      $('wTitle').textContent = "Shahana's birthday is almost here";
       $('wSub').textContent = 'Something special is waiting for you...';
       const s = Math.floor(rem / 1000);
       $('cdD').textContent = Math.floor(s / 86400); $('cdH').textContent = String(Math.floor(s % 86400 / 3600)).padStart(2, '0');
@@ -703,7 +805,7 @@ function welcomeStart() {
   loop(); tick = setInterval(loop, 500);
 }
 
-/* ============================== CAKE + INVITE ============================== */
+/* ============================== PAGE 2/3: CAKE + INVITE ============================== */
 function buildCakeGrid() {
   const g = $('cakeGrid');
   g.innerHTML = CAKES.map(c => `<div class="cc" data-id="${c.id}" tabindex="0" role="button" aria-label="${c.name}"><div class="thumb"></div><b>${c.name}</b></div>`).join('');
@@ -720,12 +822,12 @@ function buildCakeGrid() {
 }
 function inviteUrl() { return location.origin + location.pathname + '?room=' + roomId; }
 function fillInvite() {
-  const msg = 'Irfan, I have prepared something special for you! Open this invitation and let\'s celebrate together ❤️';
+  const msg = 'Irfan, it\'s my birthday and I have prepared something special for you! Open this invitation and let\'s celebrate together ❤️';
   $('inviteMsg').textContent = msg; $('inviteUrl').value = inviteUrl();
   $('btnWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(msg + '\n' + inviteUrl()), '_blank');
 }
 
-/* ============================== CAKE CUTTING (synced) ============================== */
+/* ============================== PAGE 5: CAKE CUTTING (synced) ============================== */
 let myReady = false, cdTimer = null, cdFor = 0, finScheduled = 0, cutShown = false, sawCountdown = false, startAt = 0, cancelAt = 0, lastNum = null;
 function setReady(v) {
   if (!roomRef || !role || myReady === v) return;
@@ -735,7 +837,7 @@ function setReady(v) {
   roomRef.child('users/' + role + '/ready').set(v).catch(() => {});
 }
 function clearCd() { clearInterval(cdTimer); cdTimer = null; cdFor = 0; $('cdBig').hidden = true; lastNum = null; }
-function bothReady() { const u = state.users || {}; return !!(u.Shahana && u.Shahana.ready && u.Irfan && u.Irfan.ready); }
+function bothReady() { const u = state.users || {}; return !!(u[HOST] && u[HOST].ready && u[GUEST] && u[GUEST].ready); }
 
 function cutRender() {
   const cc = state.cake_cutting || {}, u = state.users || {};
@@ -775,7 +877,7 @@ function startCd(cutAt) {
     const rem = cutAt - serverNow();
     const n = rem > 0 ? String(Math.ceil(rem / 1000)) : '✂️';
     if (n !== lastNum) { lastNum = n; const e = $('cdBig'); e.textContent = n; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); if (navigator.vibrate) navigator.vibrate(30); }
-    if (rem <= 0 && finScheduled !== cutAt) { finScheduled = cutAt; setTimeout(() => finalize(cutAt), role === 'Shahana' ? 0 : 900); }
+    if (rem <= 0 && finScheduled !== cutAt) { finScheduled = cutAt; setTimeout(() => finalize(cutAt), role === HOST ? 0 : 900); }
   };
   step(); cdTimer = setInterval(step, 60);
 }
@@ -793,11 +895,11 @@ function playCut(instant) {
   setTimeout(() => Confetti.burst(120), 2600);
 }
 
-/* ============================== VIRTUAL BITE ============================== */
+/* ============================== PAGE 6: VIRTUAL BITE ============================== */
 let biteSeen = false, lastBiteId = null, biteInit = false, feedCool = 0;
 function biteRender() {
   const e = state.cake_bite_events || {};
-  if (!biteInit) { biteInit = true; lastBiteId = e.id || ''; return; }
+  if (!biteInit) { biteInit = true; lastBiteId = e.id || ''; return; }       // ignore events from before we arrived
   if (e.id && e.id !== lastBiteId) { lastBiteId = e.id; playBite(e.sender, e.receiver); }
 }
 function playBite(sender, receiver) {
@@ -806,7 +908,8 @@ function playBite(sender, receiver) {
   const st = stage.getBoundingClientRect(), a = s.getBoundingClientRect(), b = r.getBoundingClientRect();
   const from = { x: a.left + a.width / 2 - st.left - 28, y: a.top + a.height * .55 - st.top - 24 };
   const to = { x: b.left + b.width / 2 - st.left - 28, y: b.top + b.height * .5 - st.top - 24 };
-  s.style.setProperty('--rx', sender === 'Shahana' ? '14px' : '-14px'); s.style.setProperty('--rr', sender === 'Shahana' ? '4deg' : '-4deg');
+  // Irfan's character is on the left, Shahana's on the right
+  s.style.setProperty('--rx', sender === 'IRFAN' ? '14px' : '-14px'); s.style.setProperty('--rr', sender === 'IRFAN' ? '4deg' : '-4deg');
   s.classList.remove('reach'); void s.getBoundingClientRect(); s.classList.add('reach');
   const el = $('flySlice'); el.style.display = 'block';
   const T = (p, sc, rot) => `translate(${p.x}px,${p.y}px) scale(${sc}) rotate(${rot}deg)`;
@@ -833,10 +936,10 @@ function feed() {
   }).catch(() => toast('Could not send the bite, try again'));
 }
 
-/* ============================== WIRING ============================== */
+/* ============================== BOOT / WIRING ============================== */
 function wire() {
-  ['chShahana', 'bShahana'].forEach(i => $(i).innerHTML = charSVG('Shahana'));
-  ['chSah', 'bSah'].forEach(i => $(i).innerHTML = charSVG('Irfan'));
+  ['chIrfan', 'bIrfan'].forEach(i => $(i).innerHTML = charSVG('IRFAN'));
+  ['chShah', 'bShah'].forEach(i => $(i).innerHTML = charSVG('SHAHANA'));
   $('rDate').textContent = niceDate();
   $('btnStart').onclick = () => { clearInterval(tick); buildCakeGrid(); showPage('p-cake'); };
   $('btnGen').onclick = createRoom;
@@ -852,6 +955,7 @@ function wire() {
   $('btnFeed').onclick = feed;
   $('btnFeed').textContent = '🍰 Feed';
 
+  // hold-to-cut: pointer events, released on any kind of interruption
   const h = $('btnHold');
   h.addEventListener('pointerdown', e => { e.preventDefault(); try { h.setPointerCapture(e.pointerId); } catch (x) {} setReady(true); if (navigator.vibrate) navigator.vibrate(20); });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => h.addEventListener(ev, () => setReady(false)));
@@ -862,40 +966,22 @@ function wire() {
   h.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') setReady(false); });
 }
 
-function setFeedLabel() { $('btnFeed').textContent = role === 'Shahana' ? '🍰 Feed Irfan' : '🍰 Feed Shahana'; }
+function setFeedLabel() { $('btnFeed').textContent = '🍰 Feed ' + NAMES[other()]; }
 
-/* ============================== BOOT ============================== */
 async function boot() {
   wire(); bunting($('bunting2'));
-
-  // GUEST join handler — attached immediately so it always works
-  $('btnJoin').onclick = async () => {
-    const btn = $('btnJoin');
-    if (btn.disabled) return;
-    btn.disabled = true;
-    const id = new URLSearchParams(location.search).get('room');
-    if (!id) { btn.disabled = false; return fail('Invalid link', 'This invitation link is missing a room id.'); }
-    try { Music.start(); } catch (e) {}
-    try { await joinExisting(id); }
-    catch (e) { btn.disabled = false; toast('Could not join, please try again.'); }
-  };
-
   try { await initFirebase(); }
   catch (e) { return fail('Setup needed', e.message || 'Could not connect to Firebase.'); }
-
   const id = new URLSearchParams(location.search).get('room');
-  if (!id) return welcomeStart();
-
+  if (!id) return welcomeStart();                          // Shahana (host) starting fresh
   if (!/^[a-z0-9]{6,20}$/i.test(id)) return fail('Invalid link', 'This invitation link looks broken.');
-
-  // Host reconnect: if this device is the host, auto-join
+  // Returning host reconnects automatically; Irfan taps JOIN (also unlocks audio on his phone)
   try {
     const snap = await db.ref('birthday_rooms/' + id + '/hostUid').once('value');
     if (snap.val() === uid) return joinExisting(id);
   } catch (e) { return fail('Cannot open invitation', 'Please check your connection and try again.'); }
-
-  // Guest: show join page, wait for button tap
   showPage('p-join');
+  $('btnJoin').onclick = () => { $('btnJoin').disabled = true; Music.start(); joinExisting(id); };
 }
 boot();
 })();
