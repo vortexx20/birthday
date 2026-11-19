@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0D0B18">
-<title>A Special Birthday for Sahaana</title>
+<title>A Special Birthday for Shahana</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!--
 =====================================================================================
- A SPECIAL BIRTHDAY FOR Irfan -  single-file project
+ A SPECIAL BIRTHDAY FOR Shahana -  single-file project
 =====================================================================================
 
  FOLDER STRUCTURE
@@ -41,7 +41,7 @@
          firebase login
          firebase init hosting   (public dir: .   single-page app: No   don't overwrite index.html)
          firebase deploy
-      Open the https://<project>.web.app URL on Irfan's phone.
+      Open the https://<project>.web.app URL on Shahana's phone.
 
  firebase.json
    {
@@ -67,8 +67,8 @@
              ".validate": "newData.isString() && (newData.val() === 'lobby' || newData.val() === 'room' || newData.val() === 'cut' || newData.val() === 'bite')"
            },
            "users": {
-             "irfan":   { ".write": "auth != null && auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val()" },
-             "sahaana": { ".write": "auth != null && auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val()" }
+             "Shahana":   { ".write": "auth != null && auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val()" },
+             "Irfan": { ".write": "auth != null && auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val()" }
            },
            "cake_cutting": {
              ".write": "auth != null && (auth.uid === root.child('birthday_rooms').child($room).child('hostUid').val() || auth.uid === root.child('birthday_rooms').child($room).child('guestUid').val())"
@@ -87,7 +87,7 @@
  HOW IT WORKS
    - Shahana(host) opens the site, waits for midnight (server time, Asia/Kolkata), picks a cake,
      generates a room + invitation link and sends it via WhatsApp.
-   - Irfanopens the link, joins as guest (first device to join gets the guest seat; the cake
+   - Shahanaopens the link, joins as guest (first device to join gets the guest seat; the cake
      can never be changed by her - the rules only allow cake_selection at room creation).
    - Everything after that (candles, hold-to-cut, countdown, cutting, feeding) is synced live
      through Firebase Realtime Database listeners.
@@ -213,7 +213,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
 @keyframes smoke{0%{opacity:.8;transform:translateY(0)}100%{opacity:0;transform:translateY(-34px)}}
 
 .char{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 12px rgba(0,0,0,.4));animation:bob 3.2s ease-in-out infinite}
-.char.sahaana{animation-delay:-1.4s}
+.char.Irfan{animation-delay:-1.4s}
 @keyframes bob{50%{transform:translateY(-6px)}}
 .char .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
 @keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
@@ -264,7 +264,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
   <!-- PAGE 1: WELCOME (host) -->
   <section class="page" id="p-welcome">
     <div class="bunting" id="bunting"></div>
-    <p class="eyebrow" id="wEyebrow">For Sahaana</p>
+    <p class="eyebrow" id="wEyebrow">For Irfan</p>
     <h1 class="script" id="wTitle">Something special…</h1>
     <p id="wSub"></p>
     <div class="countdown" id="cd" hidden>
@@ -297,14 +297,14 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
       </div>
     </div>
     <div class="chips" id="inviteChips"></div>
-    <button class="btn" id="btnEnter" disabled>Waiting for Irfanto join…</button>
+    <button class="btn" id="btnEnter" disabled>Waiting for Shahanato join…</button>
   </section>
 
   <!-- GUEST: JOIN -->
   <section class="page" id="p-join">
     <div class="bunting" id="bunting2"></div>
     <p class="eyebrow">You're invited</p>
-    <h1 class="script">Sahaana…</h1>
+    <h1 class="script">Irfan…</h1>
     <p>Shahanahas prepared something special for you ❤️</p>
     <button class="btn big" id="btnJoin">JOIN THE CELEBRATION</button>
   </section>
@@ -318,11 +318,11 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
 
   <!-- PAGE 4: SHARED ROOM -->
   <section class="page" id="p-room">
-    <h2 class="script">Happy 19th Birthday Sahaana!</h2>
+    <h2 class="script">Happy 19th Birthday Irfan!</h2>
     <p id="rDate"></p>
     <p class="age">19 YEARS OLD</p>
     <div class="scene">
-      <div class="chwrap" id="chIrfan"></div>
+      <div class="chwrap" id="chShahana"></div>
       <div class="cakebox" id="roomCake"></div>
       <div class="chwrap" id="chSah"></div>
     </div>
@@ -341,7 +341,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
     <p id="cutMsg"></p>
     <button class="btn hold" id="btnHold">🔪 HOLD TO CUT</button>
     <div id="cutDone" hidden>
-      <h2 class="script">Congratulations Sahaana! 🎉</h2>
+      <h2 class="script">Congratulations Irfan! 🎉</h2>
       <p style="margin:8px 0 14px">You two cut it together ❤️</p>
       <button class="btn" id="btnToBite">Share a sweet bite 🍰</button>
     </div>
@@ -351,7 +351,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
   <section class="page" id="p-bite">
     <h2 class="script">Let's Share a Sweet Bite!</h2>
     <div class="bitestage" id="biteStage">
-      <div class="chwrap" id="bIrfan"></div>
+      <div class="chwrap" id="bShahana"></div>
       <div class="chwrap" id="bSah"></div>
       <div id="flySlice"></div>
     </div>
@@ -389,7 +389,7 @@ const CONFIG = {
   testMode: true                               // true = skip the midnight lock (set FALSE before the real day)
 };
 
-const NAMES = { irfan: 'Irfan', sahaana: 'Sahaana' };
+const NAMES = { Shahana: 'Shahana', Irfan: 'Irfan' };
 const DATE_OK = /^\d{4}-\d{2}-\d{2}$/.test(CONFIG.birthdayDate);
 const ACTIVATION = DATE_OK ? Date.parse(CONFIG.birthdayDate + 'T00:00:00' + CONFIG.tzOffset) : NaN;
 
@@ -615,7 +615,7 @@ function mountCake(el, id, opts) {
 
 /* ============================== ART: ANIME CHARACTERS ============================== */
 function charSVG(role) {
-  const sah = role === 'sahaana', hair = sah ? '#3a2030' : '#1d1a2b', shirt = sah ? '#ff6b9d' : '#5b7cfa';
+  const sah = role === 'Irfan', hair = sah ? '#3a2030' : '#1d1a2b', shirt = sah ? '#ff6b9d' : '#5b7cfa';
   return `<svg class="char ${role}" viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg" aria-label="${NAMES[role]}">
     ${sah ? `<path d="M18 70Q14 150 36 162L84 162Q106 150 102 70Z" fill="${hair}"/>` : ''}
     <path d="M26 170Q26 118 60 118Q94 118 94 170Z" fill="${shirt}"/>
@@ -636,7 +636,7 @@ function charSVG(role) {
 let db, auth, uid = null, role = null, roomId = null, roomRef = null, state = null;
 let serverOffset = 0, offsetKnown = false, online = false, joined = false, selectedCake = null;
 const serverNow = () => Date.now() + serverOffset;
-const other = () => role === 'irfan' ? 'sahaana' : 'irfan';
+const other = () => role === 'Shahana' ? 'Irfan' : 'Shahana';
 
 function setConn(ok, txt) {
   const c = $('conn'); c.classList.toggle('ok', ok === true); c.classList.toggle('bad', ok === false);
@@ -678,13 +678,13 @@ async function createRoom() {
   try {
     const id = rid(), ref = db.ref('birthday_rooms/' + id);
     await ref.set({
-      cake_selection: selectedCake, host: 'irfan', guest: 'sahaana', hostUid: uid,
+      cake_selection: selectedCake, host: 'Shahana', guest: 'Irfan', hostUid: uid,
       createdAt: firebase.database.ServerValue.TIMESTAMP, stage: 'lobby', candles_blown: false,
-      users: { irfan: { connected: true, ready: false }, sahaana: { connected: false, ready: false } },
+      users: { Shahana: { connected: true, ready: false }, Irfan: { connected: false, ready: false } },
       cake_cutting: { status: 'waiting', countdown: 0, cutAt: 0, cut_completed: false },
       cake_bite_events: { sender: '', receiver: '', timestamp: 0, id: '' }
     });
-    roomId = id; role = 'irfan';
+    roomId = id; role = 'Shahana';
     history.replaceState(null, '', location.pathname + '?room=' + id);
     await attachRoom();
   } catch (e) {
@@ -699,10 +699,10 @@ async function joinExisting(id) {
   try { snap = await roomRef.once('value'); } catch (e) { return fail('Cannot open invitation', 'Please check your connection and try again.'); }
   if (!snap.exists()) return fail('Invitation not found', 'This birthday invitation does not exist or has expired.');
   const r = snap.val();
-  if (r.hostUid === uid) role = 'irfan';
+  if (r.hostUid === uid) role = 'Shahana';
   else if (!r.guestUid || r.guestUid === uid) {
     if (!r.guestUid) { try { await roomRef.child('guestUid').set(uid); } catch (e) { return fail('Invitation already used', 'Someone else already joined this birthday room.'); } }
-    role = 'sahaana';
+    role = 'Irfan';
   } else return fail('Invitation already used', 'Someone else already joined this birthday room.');
   await attachRoom();
 }
@@ -717,7 +717,7 @@ async function attachRoom() {
 const setStage = s => roomRef.child('stage').set(s).catch(() => toast('Could not change page, try again'));
 
 /* ============================== RENDER ROUTER ============================== */
-const chipsHTML = () => ['irfan', 'sahaana'].map(r => {
+const chipsHTML = () => ['Shahana', 'Irfan'].map(r => {
   const u = (state.users || {})[r] || {}, st = $('p-cut').classList.contains('active') && u.ready;
   return `<span class="chip ${u.connected ? 'on' : ''} ${st ? 'rdy' : ''}"><i></i>${NAMES[r]} · ${st ? 'ready ❤️' : u.connected ? 'online' : 'offline'}</span>`;
 }).join('');
@@ -738,15 +738,15 @@ function render() {
   setFeedLabel();
   ensureCakes();
   const st = state.stage || 'lobby';
-  const target = st === 'lobby' ? (role === 'irfan' ? 'p-invite' : 'p-wait') : st === 'room' ? 'p-room' : st === 'cut' ? 'p-cut' : 'p-bite';
+  const target = st === 'lobby' ? (role === 'Shahana' ? 'p-invite' : 'p-wait') : st === 'room' ? 'p-room' : st === 'cut' ? 'p-cut' : 'p-bite';
   if (!$(target).classList.contains('active')) { showPage(target); if (target === 'p-bite') biteSeen = true; }
 
   const users = state.users || {};
   // invitation page
   if (st === 'lobby') {
     $('inviteChips').innerHTML = chipsHTML(); $('waitChips').innerHTML = chipsHTML();
-    const here = !!(users.Irfan&& users.sahaana.connected), b = $('btnEnter');
-    b.disabled = !here; b.textContent = here ? 'Irfanis here! Enter birthday room ✨' : 'Waiting for Irfanto join…';
+    const here = !!(users.Shahana&& users.Irfan.connected), b = $('btnEnter');
+    b.disabled = !here; b.textContent = here ? 'Shahanais here! Enter birthday room ✨' : 'Waiting for Shahanato join…';
     if (here && !joinToastDone) { joinToastDone = true; Confetti.burst(80); Music.chime(); }
   }
   if (st === 'room') {
@@ -763,7 +763,7 @@ let joinToastDone = false;
 
 function blowAnim() {
   roomCake.blown(true); cutCake.blown(true);
-  Confetti.burst(90); Music.chime(); toast('Candles out - make a wish, Irfan✨');
+  Confetti.burst(90); Music.chime(); toast('Candles out - make a wish, Shahana✨');
 }
 
 /* ============================== PAGE 1: WELCOME ============================== */
@@ -778,7 +778,7 @@ function welcomeStart() {
     if (rem > 0 && !CONFIG.testMode) {
       $('cd').hidden = false; $('btnStart').hidden = true;
       $('wEyebrow').textContent = niceDate();
-      $('wTitle').textContent = "Sahaana's birthday is almost here";
+      $('wTitle').textContent = "Irfan's birthday is almost here";
       $('wSub').textContent = 'Something special is waiting for you...';
       const s = Math.floor(rem / 1000);
       $('cdD').textContent = Math.floor(s / 86400); $('cdH').textContent = String(Math.floor(s % 86400 / 3600)).padStart(2, '0');
@@ -811,7 +811,7 @@ function buildCakeGrid() {
 }
 function inviteUrl() { return location.origin + location.pathname + '?room=' + roomId; }
 function fillInvite() {
-  const msg = 'Sahaana, I have prepared something special for you! Open this invitation and let\'s celebrate together ❤️';
+  const msg = 'Irfan, I have prepared something special for you! Open this invitation and let\'s celebrate together ❤️';
   $('inviteMsg').textContent = msg; $('inviteUrl').value = inviteUrl();
   $('btnWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(msg + '\n' + inviteUrl()), '_blank');
 }
@@ -826,7 +826,7 @@ function setReady(v) {
   roomRef.child('users/' + role + '/ready').set(v).catch(() => {});
 }
 function clearCd() { clearInterval(cdTimer); cdTimer = null; cdFor = 0; $('cdBig').hidden = true; lastNum = null; }
-function bothReady() { const u = state.users || {}; return !!(u.Shahana&& u.irfan.ready && u.Irfan&& u.sahaana.ready); }
+function bothReady() { const u = state.users || {}; return !!(u.Shahana&& u.Shahana.ready && u.Shahana&& u.Irfan.ready); }
 
 function cutRender() {
   const cc = state.cake_cutting || {}, u = state.users || {};
@@ -866,7 +866,7 @@ function startCd(cutAt) {
     const rem = cutAt - serverNow();
     const n = rem > 0 ? String(Math.ceil(rem / 1000)) : '✂️';
     if (n !== lastNum) { lastNum = n; const e = $('cdBig'); e.textContent = n; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); if (navigator.vibrate) navigator.vibrate(30); }
-    if (rem <= 0 && finScheduled !== cutAt) { finScheduled = cutAt; setTimeout(() => finalize(cutAt), role === 'irfan' ? 0 : 900); }
+    if (rem <= 0 && finScheduled !== cutAt) { finScheduled = cutAt; setTimeout(() => finalize(cutAt), role === 'Shahana' ? 0 : 900); }
   };
   step(); cdTimer = setInterval(step, 60);
 }
@@ -897,7 +897,7 @@ function playBite(sender, receiver) {
   const st = stage.getBoundingClientRect(), a = s.getBoundingClientRect(), b = r.getBoundingClientRect();
   const from = { x: a.left + a.width / 2 - st.left - 28, y: a.top + a.height * .55 - st.top - 24 };
   const to = { x: b.left + b.width / 2 - st.left - 28, y: b.top + b.height * .5 - st.top - 24 };
-  s.style.setProperty('--rx', sender === 'irfan' ? '14px' : '-14px'); s.style.setProperty('--rr', sender === 'irfan' ? '4deg' : '-4deg');
+  s.style.setProperty('--rx', sender === 'Shahana' ? '14px' : '-14px'); s.style.setProperty('--rr', sender === 'Shahana' ? '4deg' : '-4deg');
   s.classList.remove('reach'); void s.getBoundingClientRect(); s.classList.add('reach');
   const el = $('flySlice'); el.style.display = 'block';
   const T = (p, sc, rot) => `translate(${p.x}px,${p.y}px) scale(${sc}) rotate(${rot}deg)`;
@@ -926,8 +926,8 @@ function feed() {
 
 /* ============================== BOOT / WIRING ============================== */
 function wire() {
-  ['chIrfan', 'bIrfan'].forEach(i => $(i).innerHTML = charSVG('irfan'));
-  ['chSah', 'bSah'].forEach(i => $(i).innerHTML = charSVG('sahaana'));
+  ['chShahana', 'bShahana'].forEach(i => $(i).innerHTML = charSVG('Shahana'));
+  ['chSah', 'bSah'].forEach(i => $(i).innerHTML = charSVG('Irfan'));
   $('rDate').textContent = niceDate();
   $('btnStart').onclick = () => { clearInterval(tick); buildCakeGrid(); showPage('p-cake'); };
   $('btnGen').onclick = createRoom;
@@ -954,7 +954,7 @@ function wire() {
   h.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') setReady(false); });
 }
 
-function setFeedLabel() { $('btnFeed').textContent = role === 'irfan' ? '🍰 Feed Sahaana' : '🍰 Feed Irfan'; }
+function setFeedLabel() { $('btnFeed').textContent = role === 'Shahana' ? '🍰 Feed Irfan' : '🍰 Feed Shahana'; }
 
 async function boot() {
   wire(); bunting($('bunting2'));
@@ -963,7 +963,7 @@ async function boot() {
   const id = new URLSearchParams(location.search).get('room');
   if (!id) return welcomeStart();                          // Shahana(host) starting fresh
   if (!/^[a-z0-9]{6,20}$/i.test(id)) return fail('Invalid link', 'This invitation link looks broken.');
-  // Returning host reconnects automatically; Irfantaps JOIN (also unlocks audio on her phone)
+  // Returning host reconnects automatically; Shahanataps JOIN (also unlocks audio on her phone)
   try {
     const snap = await db.ref('birthday_rooms/' + id + '/hostUid').once('value');
     if (snap.val() === uid) return joinExisting(id);
