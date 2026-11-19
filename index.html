@@ -11,7 +11,7 @@
 
 <!--
 =====================================================================================
- A SPECIAL BIRTHDAY FOR SAHAANA  -  single-file project
+ A SPECIAL BIRTHDAY FOR Irfan -  single-file project
 =====================================================================================
 
  FOLDER STRUCTURE
@@ -85,9 +85,9 @@
    }
 
  HOW IT WORKS
-   - Irfan (host) opens the site, waits for midnight (server time, Asia/Kolkata), picks a cake,
+   - Shahana(host) opens the site, waits for midnight (server time, Asia/Kolkata), picks a cake,
      generates a room + invitation link and sends it via WhatsApp.
-   - Sahaana opens the link, joins as guest (first device to join gets the guest seat; the cake
+   - Irfanopens the link, joins as guest (first device to join gets the guest seat; the cake
      can never be changed by her - the rules only allow cake_selection at room creation).
    - Everything after that (candles, hold-to-cut, countdown, cutting, feeding) is synced live
      through Firebase Realtime Database listeners.
@@ -280,7 +280,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
   <!-- PAGE 2: CAKE SELECTION (host only) -->
   <section class="page" id="p-cake">
     <h2 class="script">Choose Your Birthday Cake</h2>
-    <p>Irfan has something sweet for you! 🍰</p>
+    <p>Shahanahas something sweet for you! 🍰</p>
     <div class="cakegrid" id="cakeGrid"></div>
     <button class="btn" id="btnGen" disabled>Generate Invitation Link 💌</button>
   </section>
@@ -297,7 +297,7 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
       </div>
     </div>
     <div class="chips" id="inviteChips"></div>
-    <button class="btn" id="btnEnter" disabled>Waiting for Sahaana to join…</button>
+    <button class="btn" id="btnEnter" disabled>Waiting for Irfanto join…</button>
   </section>
 
   <!-- GUEST: JOIN -->
@@ -305,14 +305,14 @@ input.url{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(-
     <div class="bunting" id="bunting2"></div>
     <p class="eyebrow">You're invited</p>
     <h1 class="script">Sahaana…</h1>
-    <p>Irfan has prepared something special for you ❤️</p>
+    <p>Shahanahas prepared something special for you ❤️</p>
     <button class="btn big" id="btnJoin">JOIN THE CELEBRATION</button>
   </section>
 
   <!-- GUEST: WAIT -->
   <section class="page" id="p-wait">
     <h2 class="script">Almost there…</h2>
-    <p>Irfan will start the celebration in a moment 💕</p>
+    <p>Shahanawill start the celebration in a moment 💕</p>
     <div class="chips" id="waitChips"></div>
   </section>
 
@@ -745,8 +745,8 @@ function render() {
   // invitation page
   if (st === 'lobby') {
     $('inviteChips').innerHTML = chipsHTML(); $('waitChips').innerHTML = chipsHTML();
-    const here = !!(users.sahaana && users.sahaana.connected), b = $('btnEnter');
-    b.disabled = !here; b.textContent = here ? 'Sahaana is here! Enter birthday room ✨' : 'Waiting for Sahaana to join…';
+    const here = !!(users.Irfan&& users.sahaana.connected), b = $('btnEnter');
+    b.disabled = !here; b.textContent = here ? 'Irfanis here! Enter birthday room ✨' : 'Waiting for Irfanto join…';
     if (here && !joinToastDone) { joinToastDone = true; Confetti.burst(80); Music.chime(); }
   }
   if (st === 'room') {
@@ -763,7 +763,7 @@ let joinToastDone = false;
 
 function blowAnim() {
   roomCake.blown(true); cutCake.blown(true);
-  Confetti.burst(90); Music.chime(); toast('Candles out - make a wish, Sahaana ✨');
+  Confetti.burst(90); Music.chime(); toast('Candles out - make a wish, Irfan✨');
 }
 
 /* ============================== PAGE 1: WELCOME ============================== */
@@ -826,7 +826,7 @@ function setReady(v) {
   roomRef.child('users/' + role + '/ready').set(v).catch(() => {});
 }
 function clearCd() { clearInterval(cdTimer); cdTimer = null; cdFor = 0; $('cdBig').hidden = true; lastNum = null; }
-function bothReady() { const u = state.users || {}; return !!(u.irfan && u.irfan.ready && u.sahaana && u.sahaana.ready); }
+function bothReady() { const u = state.users || {}; return !!(u.Shahana&& u.irfan.ready && u.Irfan&& u.sahaana.ready); }
 
 function cutRender() {
   const cc = state.cake_cutting || {}, u = state.users || {};
@@ -961,9 +961,9 @@ async function boot() {
   try { await initFirebase(); }
   catch (e) { return fail('Setup needed', e.message || 'Could not connect to Firebase.'); }
   const id = new URLSearchParams(location.search).get('room');
-  if (!id) return welcomeStart();                          // Irfan (host) starting fresh
+  if (!id) return welcomeStart();                          // Shahana(host) starting fresh
   if (!/^[a-z0-9]{6,20}$/i.test(id)) return fail('Invalid link', 'This invitation link looks broken.');
-  // Returning host reconnects automatically; Sahaana taps JOIN (also unlocks audio on her phone)
+  // Returning host reconnects automatically; Irfantaps JOIN (also unlocks audio on her phone)
   try {
     const snap = await db.ref('birthday_rooms/' + id + '/hostUid').once('value');
     if (snap.val() === uid) return joinExisting(id);
